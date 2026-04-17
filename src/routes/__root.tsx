@@ -29,14 +29,18 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "RentPay — Real-time rental payment coordination" },
+      { title: "Apartment payment link test" },
       { name: "description", content: "Coordinate manual rental payments between tenants and landlords with live updates and proof verification." },
       { name: "author", content: "RentPay" },
-      { property: "og:title", content: "RentPay — Real-time rental payment coordination" },
-      { property: "og:description", content: "Live tenant–landlord payment coordination with proof upload and instant confirmation." },
+      { property: "og:title", content: "Apartment payment link test" },
+      { property: "og:description", content: "Coordinate manual rental payments between tenants and landlords with live updates and proof verification." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Apartment payment link test" },
+      { name: "twitter:description", content: "Coordinate manual rental payments between tenants and landlords with live updates and proof verification." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/239ee6a6-2332-4fed-9d91-da7841b25aa1/id-preview-79e5bdcb--0aafa57e-80b9-4129-8483-4bdc1c9337fc.lovable.app-1776453544955.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/239ee6a6-2332-4fed-9d91-da7841b25aa1/id-preview-79e5bdcb--0aafa57e-80b9-4129-8483-4bdc1c9337fc.lovable.app-1776453544955.png" },
     ],
     links: [
       {
