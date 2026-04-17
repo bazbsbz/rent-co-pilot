@@ -14,7 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      payment_sessions: {
+        Row: {
+          account_details: string | null
+          amount: number | null
+          created_at: string
+          id: string
+          landlord_note: string | null
+          payment_method: string
+          proof_url: string | null
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          tenant_name: string
+          updated_at: string
+        }
+        Insert: {
+          account_details?: string | null
+          amount?: number | null
+          created_at?: string
+          id?: string
+          landlord_note?: string | null
+          payment_method: string
+          proof_url?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          tenant_name: string
+          updated_at?: string
+        }
+        Update: {
+          account_details?: string | null
+          amount?: number | null
+          created_at?: string
+          id?: string
+          landlord_note?: string | null
+          payment_method?: string
+          proof_url?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          tenant_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +64,12 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      payment_status:
+        | "awaiting_details"
+        | "awaiting_proof"
+        | "awaiting_confirmation"
+        | "confirmed"
+        | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +196,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      payment_status: [
+        "awaiting_details",
+        "awaiting_proof",
+        "awaiting_confirmation",
+        "confirmed",
+        "rejected",
+      ],
+    },
   },
 } as const
