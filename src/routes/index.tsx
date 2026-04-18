@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { sendTelegramAlert } from "@/server/telegram.functions";
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { Loader2, CheckCircle2, XCircle, Upload, Shield, Wifi } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Upload, Wifi } from "lucide-react";
 
 type Session = Database["public"]["Tables"]["payment_sessions"]["Row"];
 
@@ -202,12 +202,7 @@ function Header() {
           </div>
           <span className="font-semibold tracking-tight">RentPay</span>
         </div>
-        <Link
-          to="/admin"
-          className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-        >
-          <Shield className="size-3.5" /> Landlord
-        </Link>
+        <span className="text-[11px] text-muted-foreground">Secure · Real-time</span>
       </div>
     </header>
   );
