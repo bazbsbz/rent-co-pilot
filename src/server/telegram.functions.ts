@@ -1,5 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import {
+  notifyTenantJoined,
+  notifyMethodSelected,
+  notifyProofUploaded,
+} from "@/server/telegram-bot";
 
 const NotifySchema = z.object({
   event: z.enum(["tenant_joined", "method_selected", "proof_uploaded"]),
@@ -8,61 +14,30 @@ const NotifySchema = z.object({
   sessionId: z.string().uuid().optional(),
 });
 
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/telegram";
-
-function buildMessage(input: z.infer<typeof NotifySchema>): string {
-  const safe = (s: string) =>
-    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const name = `<b>${safe(input.tenantName)}</b>`;
-  const method = input.method ? ` via <b>${safe(input.method)}</b>` : "";
-  switch (input.event) {
-    case "tenant_joined":
-      return `🟢 New tenant: ${name} just opened the payment page.`;
-    case "method_selected":
-      return `💳 ${name} selected a payment method${method}. Awaiting your details.`;
-    case "proof_uploaded":
-      return `📤 ${name} uploaded payment proof${method}. Please review and confirm.`;
-  }
-}
-
 export const sendTelegramAlert = createServerFn({ method: "POST" })
   .inputValidator((input) => NotifySchema.parse(input))
   .handler(async ({ data }) => {
-    const apiKey = process.env.LOVABLE_API_KEY;
-    const connKey = process.env.TELEGRAM_API_KEY;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
-
-    if (!apiKey || !connKey) {
-      console.warn("Telegram not configured (gateway keys missing). Skipping alert.");
-      return { ok: false, skipped: true as const, reason: "missing_keys" };
-    }
-    if (!chatId) {
-      console.warn("TELEGRAM_CHAT_ID not configured. Skipping alert.");
-      return { ok: false, skipped: true as const, reason: "missing_chat_id" };
-    }
-
     try {
-      const res = await fetch(`${GATEWAY_URL}/sendMessage`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "X-Connection-Api-Key": connKey,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: buildMessage(data),
-          parse_mode: "HTML",
-        }),
-      });
-      const body = await res.json();
-      if (!res.ok) {
-        console.error("Telegram send failed", res.status, body);
-        return { ok: false, skipped: false as const, error: `Telegram ${res.status}` };
+      if (data.event === "tenant_joined") {
+        await notifyTenantJoined(data.tenantName);
+      } else if (data.event === "method_selected") {
+        if (!data.sessionId) return { ok: false as const, skipped: true };
+        await notifyMethodSelected(data.sessionId, data.tenantName, data.method ?? "—");
+      } else if (data.event === "proof_uploaded") {
+        if (!data.sessionId) return { ok: false as const, skipped: true };
+        // Fetch proof_url from DB
+        const { data: s } = await supabaseAdmin
+          .from("payment_sessions")
+          .select("proof_url")
+          .eq("id", data.sessionId)
+          .maybeSingle();
+        if (s?.proof_url) {
+          await notifyProofUploaded(data.sessionId, data.tenantName, data.method ?? "—", s.proof_url);
+        }
       }
       return { ok: true as const };
     } catch (err) {
-      console.error("Telegram fetch error", err);
-      return { ok: false, skipped: false as const, error: "network_error" };
+      console.error("sendTelegramAlert failed", err);
+      return { ok: false as const, error: String(err) };
     }
   });

@@ -56,6 +56,56 @@ export type Database = {
         }
         Relationships: []
       }
+      telegram_admin_state: {
+        Row: {
+          active_session_id: string | null
+          awaiting: string | null
+          chat_id: number
+          pending_amount: number | null
+          updated_at: string
+        }
+        Insert: {
+          active_session_id?: string | null
+          awaiting?: string | null
+          chat_id: number
+          pending_amount?: number | null
+          updated_at?: string
+        }
+        Update: {
+          active_session_id?: string | null
+          awaiting?: string | null
+          chat_id?: number
+          pending_amount?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telegram_admin_state_active_session_id_fkey"
+            columns: ["active_session_id"]
+            isOneToOne: false
+            referencedRelation: "payment_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      telegram_bot_state: {
+        Row: {
+          id: number
+          update_offset: number
+          updated_at: string
+        }
+        Insert: {
+          id: number
+          update_offset?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          update_offset?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
