@@ -1,20 +1,18 @@
-const KEY = "rentpay_admin_token";
+// Admin access is now open — no password required.
+// These helpers are kept as no-ops so existing imports keep working.
 
 export function getAdminToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(KEY);
+  return "open";
 }
 
-export function setAdminToken(token: string) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(KEY, token);
+export function setAdminToken(_token: string) {
+  // no-op
 }
 
 export function clearAdminToken() {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(KEY);
+  // no-op
 }
 
 export function isAdmin(): boolean {
-  return !!getAdminToken();
+  return true;
 }
