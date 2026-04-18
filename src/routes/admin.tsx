@@ -1,6 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useMatches } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -9,13 +8,20 @@ export const Route = createFileRoute("/admin")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  component: AdminRedirect,
+  component: AdminLayout,
 });
 
-function AdminRedirect() {
+function AdminLayout() {
   const navigate = useNavigate();
+  const matches = useMatches();
+  // If user is exactly on /admin (no child matched), redirect to dashboard.
+  const isExactAdmin = matches[matches.length - 1]?.routeId === "/admin";
+
   useEffect(() => {
-    navigate({ to: "/admin/dashboard", replace: true });
-  }, [navigate]);
-  return null;
+    if (isExactAdmin) {
+      navigate({ to: "/admin/dashboard", replace: true });
+    }
+  }, [isExactAdmin, navigate]);
+
+  return <Outlet />;
 }
