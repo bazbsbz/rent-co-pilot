@@ -6,22 +6,36 @@ const VerifySchema = z.object({
 });
 
 export const verifyAdminPassword = createServerFn({ method: "POST" })
-  .inputValidator((input) => VerifySchema.parse(input))
+  .inputValidator((input: unknown) => VerifySchema.parse(input))
   .handler(async ({ data }) => {
-    const expected = process.env.ADMIN_PASSWORD;
-    if (!expected) {
-      return { ok: false, error: "Admin password not configured on server." };
+    try {
+      const expected = process.env.ADMIN_PASSWORD;
+      if (!expected || typeof expected !== "string" || expected.length === 0) {
+        return { ok: false as const, error: "Admin password not configured on server." };
+      }
+
+      // constant-time-ish compare
+      let mismatch = data.password.length === expected.length ? 0 : 1;
+      const len = Math.max(expected.length, data.password.length);
+      for (let i = 0; i < len; i++) {
+        const a = i < expected.length ? expected.charCodeAt(i) : 0;
+        const b = i < data.password.length ? data.password.charCodeAt(i) : 0;
+        mismatch |= a ^ b;
+      }
+      if (mismatch !== 0) {
+        return { ok: false as const, error: "Invalid password." };
+      }
+
+      // Generate a simple token without relying on btoa (use Buffer for Worker compat)
+      const raw = `admin:${Date.now()}:${Math.random().toString(36).slice(2)}`;
+      const token =
+        typeof Buffer !== "undefined"
+          ? Buffer.from(raw).toString("base64")
+          : raw;
+
+      return { ok: true as const, token };
+    } catch (err) {
+      console.error("verifyAdminPassword error:", err);
+      return { ok: false as const, error: "Server error verifying password." };
     }
-    // constant-time-ish compare
-    if (data.password.length !== expected.length) {
-      return { ok: false, error: "Invalid password." };
-    }
-    let mismatch = 0;
-    for (let i = 0; i < expected.length; i++) {
-      mismatch |= expected.charCodeAt(i) ^ data.password.charCodeAt(i);
-    }
-    if (mismatch !== 0) {
-      return { ok: false, error: "Invalid password." };
-    }
-    return { ok: true, token: btoa(`admin:${Date.now()}`) };
   });
