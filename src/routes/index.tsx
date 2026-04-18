@@ -202,12 +202,7 @@ function Header() {
           </div>
           <span className="font-semibold tracking-tight">RentPay</span>
         </div>
-        <Link
-          to="/admin"
-          className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-        >
-          <Shield className="size-3.5" /> Landlord
-        </Link>
+        <span className="text-[11px] text-muted-foreground">Secure · Real-time</span>
       </div>
     </header>
   );
