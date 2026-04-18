@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { Loader2, CheckCircle2, XCircle, Upload, Shield, Wifi } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Upload, Wifi } from "lucide-react";
 
 type Session = Database["public"]["Tables"]["payment_sessions"]["Row"];
 
