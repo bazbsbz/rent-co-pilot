@@ -4,8 +4,7 @@ export type PaymentMethodId =
   | "paypal"
   | "applepay"
   | "bitcoin"
-  | "chime"
-  | "card";
+  | "chime";
 
 export interface PaymentMethod {
   id: PaymentMethodId;
@@ -21,7 +20,6 @@ export const PAYMENT_METHODS: PaymentMethod[] = [
   { id: "applepay", name: "Apple Pay", description: "Phone number transfer", emoji: "" },
   { id: "bitcoin", name: "Bitcoin", description: "Wallet address", emoji: "₿" },
   { id: "chime", name: "Chime", description: "ChimeSign / Pay Anyone", emoji: "💳" },
-  { id: "card", name: "Credit Card", description: "Manual card entry (simulation)", emoji: "💳" },
 ];
 
 export function getPaymentMethod(id: string): PaymentMethod | undefined {
