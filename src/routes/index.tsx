@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
-import { Loader2, CheckCircle2, XCircle, Upload, Wifi } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Upload, Wifi, Clock } from "lucide-react";
 
 type Session = Database["public"]["Tables"]["payment_sessions"]["Row"];
 
@@ -350,6 +350,7 @@ function DetailsStep({
   onPickFile: () => void;
 }) {
   const m = getPaymentMethod(session.payment_method);
+  const deadline = (session as Session & { deadline_at: string | null }).deadline_at;
   return (
     <StepCard title="Send your payment" subtitle={`Use ${m?.name ?? session.payment_method} to send the amount below.`}>
       <div className="space-y-4">
@@ -359,6 +360,7 @@ function DetailsStep({
             {session.amount != null ? `$${Number(session.amount).toFixed(2)}` : "—"}
           </div>
         </div>
+        {deadline && <CountdownCard deadline={deadline} />}
         <div className="rounded-xl border border-border bg-surface-elevated p-4">
           <div className="text-xs text-muted-foreground uppercase tracking-wide">Send to ({m?.name})</div>
           <div className="font-mono text-sm mt-1 break-all">{session.account_details ?? "—"}</div>
@@ -389,6 +391,49 @@ function DetailsStep({
         </div>
       </div>
     </StepCard>
+  );
+}
+
+function CountdownCard({ deadline }: { deadline: string }) {
+  const target = useMemo(() => new Date(deadline).getTime(), [deadline]);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const ms = Math.max(0, target - now);
+  const totalSec = Math.floor(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  const expired = ms === 0;
+  const urgent = !expired && ms < 5 * 60_000;
+  return (
+    <div
+      className={`rounded-xl border p-4 ${
+        expired
+          ? "border-destructive/40 bg-destructive/10"
+          : urgent
+          ? "border-destructive/40 bg-destructive/5"
+          : "border-border bg-surface-elevated"
+      }`}
+    >
+      <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+        <Clock className="size-3.5" />
+        {expired ? "Time expired" : "Time remaining"}
+      </div>
+      <div
+        className={`text-3xl font-semibold mt-1 tabular-nums ${
+          expired || urgent ? "text-destructive" : "text-foreground"
+        }`}
+      >
+        {expired
+          ? "00:00"
+          : h > 0
+          ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+          : `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`}
+      </div>
+    </div>
   );
 }
 
