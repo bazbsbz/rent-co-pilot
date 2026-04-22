@@ -1,0 +1,1 @@
+ALTER TABLE public.payment_sessions ADD COLUMN IF NOT EXISTS deadline_at timestamptz;

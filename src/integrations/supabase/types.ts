@@ -19,6 +19,7 @@ export type Database = {
           account_details: string | null
           amount: number | null
           created_at: string
+          deadline_at: string | null
           id: string
           landlord_note: string | null
           payment_method: string
@@ -32,6 +33,7 @@ export type Database = {
           account_details?: string | null
           amount?: number | null
           created_at?: string
+          deadline_at?: string | null
           id?: string
           landlord_note?: string | null
           payment_method: string
@@ -45,6 +47,7 @@ export type Database = {
           account_details?: string | null
           amount?: number | null
           created_at?: string
+          deadline_at?: string | null
           id?: string
           landlord_note?: string | null
           payment_method?: string

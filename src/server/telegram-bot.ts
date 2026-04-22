@@ -274,19 +274,42 @@ async function handleAwaitingReply(chatId: number, text: string) {
       await sendMessage(chatId, "Lost the amount — please /cancel and start again.");
       return true;
     }
+    // Stash account in account_details now; ask for minutes next.
     const { error } = await supabaseAdmin
       .from("payment_sessions")
-      .update({
-        amount,
-        account_details: account,
-        status: "awaiting_proof",
-      })
+      .update({ amount, account_details: account })
       .eq("id", state.active_session_id);
+    if (error) {
+      await setState(chatId, { active_session_id: null, awaiting: null, pending_amount: null });
+      await sendMessage(chatId, `❌ Failed to save: ${safe(error.message)}`);
+      return true;
+    }
+    await setState(chatId, {
+      active_session_id: state.active_session_id,
+      awaiting: "minutes",
+      pending_amount: amount,
+    });
+    await sendMessage(chatId, `Account saved. Now send the <b>deadline in minutes</b> (e.g. <code>30</code>) — the tenant will see a live countdown.`);
+    return true;
+  }
+
+  if (state.awaiting === "minutes") {
+    const minutes = Number(text.replace(/[^\d.]/g, ""));
+    if (!Number.isFinite(minutes) || minutes <= 0 || minutes > 10080) {
+      await sendMessage(chatId, "❌ Invalid. Send a number of minutes between 1 and 10080 (7 days).");
+      return true;
+    }
+    const deadline = new Date(Date.now() + minutes * 60_000).toISOString();
+    const { error } = await supabaseAdmin
+      .from("payment_sessions")
+      .update({ deadline_at: deadline, status: "awaiting_proof" })
+      .eq("id", state.active_session_id);
+    const amount = state.pending_amount ?? 0;
     await setState(chatId, { active_session_id: null, awaiting: null, pending_amount: null });
     if (error) {
-      await sendMessage(chatId, `❌ Failed to save: ${safe(error.message)}`);
+      await sendMessage(chatId, `❌ Failed to save deadline: ${safe(error.message)}`);
     } else {
-      await sendMessage(chatId, `✅ Sent to tenant: <b>$${amount.toFixed(2)}</b> → <code>${safe(account)}</code>\n\nWaiting for proof…`);
+      await sendMessage(chatId, `✅ Sent to tenant: <b>$${amount.toFixed(2)}</b> · ⏱️ <b>${minutes} min</b> to pay.\n\nWaiting for proof…`);
     }
     return true;
   }
